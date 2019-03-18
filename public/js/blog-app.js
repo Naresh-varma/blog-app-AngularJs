@@ -51,8 +51,10 @@ blogMod.controller('editBlogCtrl', ['$scope', '$rootScope', '$http', '$routePara
             console.log(err);
         })
     $scope.editBlog = function(){
+        $scope.loading = true;
         if($scope.title == '' || $scope.description == ''){
             alert('Please dont leave blank');
+            $scope.loading = false;
         }else{
             $scope.blog = {
                 blog_id : $routeParams.blogId,
@@ -62,10 +64,12 @@ blogMod.controller('editBlogCtrl', ['$scope', '$rootScope', '$http', '$routePara
             }
             $http.post('http://localhost:3000/users/editBlog', $scope.blog)
                 .then(function(res){
-                    window.location = '#!/blog/' + res.data.blog._id;
+                    $scope.loading = false;
+                    window.location = '#!/blog/' + $routeParams.blogId;
                 }, function(res){
                     let status = (res.data.isLogedIn) ? (res.data.isAdmin ? 'success' : 'Only Admin is allowed to edit the blog') : 'Token invalid please login again';
                     alert(status);
+                    $scope.loading = false;
                     console.log(res);
                 })
         }       
@@ -89,6 +93,7 @@ blogMod.controller('addBlogCtrl', ['$scope', '$rootScope', '$http', function($sc
                 .then(function(res){
                    // alert("Successfully created");
                     window.location = '#!/blog/' + res.data.blog._id;
+                    // window.reload();
                 }, function(res){
                     let status = (res.data.isLogedIn) ? (res.data.isAdmin ? 'success' : 'Only Admin is allowed to edit the blog') : 'Error';
                     alert(status);
@@ -166,26 +171,31 @@ blogMod.controller('blogdetailsCtrl', ['$routeParams', '$scope', '$rootScope', '
             console.log(err);
         }) 
     $scope.createComment = function(){
+        //test
+        $scope.loading = true;
         if($rootScope.token == null){
             alert("Please LogIn to comment" );
+            $scope.loading = false;
             window.location = '#!/login';
         }else{
             if($scope.description == undefined){
                 alert('Please comment something');
+                $scope.loading = false;
             }else{
                 $scope.comment = {};
                 $scope.comment.blog_id = $scope.blog._id;
                 $scope.comment.token = $rootScope.token;
                 $scope.comment.description = $scope.description;
                 $http.post('http://localhost:3000/users/createComment', $scope.comment)
-                .then(function(res){
-                    window.location = '#!/blog/' +  $routeParams.blogId;
-                    location.reload();
-                }, function(err){
-                    console.log(err);
-                    alert("Please LogIn again token corrupted " );
-                    window.location = '#!/login';
-                })
+                    .then(function(res){
+                        window.location = '#!/blog/' +  $routeParams.blogId;
+                        $scope.loading = false;
+                        location.reload();
+                    }, function(err){
+                        console.log(err);
+                        alert("Please LogIn again token corrupted " );
+                        window.location = '#!/login';
+                    })
             }          
         }
     }
